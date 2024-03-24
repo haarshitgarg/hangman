@@ -14,10 +14,12 @@ include_directories(/opt/homebrew/Cellar/sfml/2.5.1_2/include)
 
 # Source files
 file(GLOB SOURCES "src/*.cc")
-
+file(GLOB TEST_SOURCES "tests/*.cc")
 
 # Add executable
 add_executable(hangman ${SOURCES})
+add_executable(hangman_test ${TEST_SOURCES})
 
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 target_link_libraries(hangman sfml-graphics sfml-window sfml-system)
+target_link_libraries(hangman_test sfml-graphics sfml-window sfml-system)

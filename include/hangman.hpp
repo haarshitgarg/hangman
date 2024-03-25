@@ -21,12 +21,16 @@ class Hangman {
         sf::Texture startup_image_;
         sf::Sprite startup_sprite_;
         sf::Text startup_text_;
+        sf::Text game_ui_text_box_;
+        sf::Texture game_ui_hangman_;
+        sf::Sprite game_ui_sprite_;
 
         sf::Font font_;
         std::queue<std::function<void()>> function_stack_;
 
-
+        std::vector<int> display_map_;
         bool exit_requested_ = false;
+        bool background_running_ = true;
         
         std::vector<char> charQueue_;
 
@@ -50,6 +54,15 @@ class Hangman {
 
         // Add a void() function to the stack
         void AddTaskToQueue(const std::function<void()>& func);
+        
+        // Handling the ui
+        void handleUI(sf::Text& ui_text);
+
+
+        // Correct_word
+        std::string correct_word_;
+
+        bool checkInput(char letter);
 };
 
 #endif //HANGMAN_HPP

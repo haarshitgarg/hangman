@@ -163,7 +163,7 @@ void Hangman::setupSpriteBackground() {
         count++;
     }
     this->startup_text_.setFont(font_);
-    this->startup_text_.setString("Hangman (for Purvaja)");
+    this->startup_text_.setString("Hangman (PP edition)");
     this->startup_text_.setFillColor(sf::Color::Red);
     this->startup_text_.setCharacterSize(60);
     this->startup_text_.setPosition(50, 300);
@@ -251,7 +251,7 @@ void Hangman::reset() {
 }
 
 std::string Hangman::getWord() {
-    std::vector<std::string> word = {"APPLE", "BANANA", "BOMB", "BEACH", "BRAIN", "FLUTE", "RED", "GREEN"};
+    std::vector<std::string> word = {"BEAUTY", "JUNE", "CUTIE", "GYMING", "MMA", "PICO", "MUMBAI", "STRONG"};
     int i = rand()%8;
     return word[i];
 }

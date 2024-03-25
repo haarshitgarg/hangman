@@ -21,6 +21,7 @@ class Hangman {
         sf::Texture startup_image_;
         sf::Sprite startup_sprite_;
         sf::Text startup_text_;
+        sf::Text game_finish_text_;
         sf::Text game_ui_text_box_;
         sf::Texture game_ui_hangman_;
         sf::Sprite game_ui_sprite_;
@@ -31,6 +32,7 @@ class Hangman {
         std::vector<int> display_map_;
         bool exit_requested_ = false;
         bool background_running_ = true;
+        bool game_finishe_= false;
         
         std::vector<char> charQueue_;
 
@@ -58,11 +60,17 @@ class Hangman {
         // Handling the ui
         void handleUI(sf::Text& ui_text);
 
+        void handleHangmanImages(int count);
+
 
         // Correct_word
         std::string correct_word_;
 
         bool checkInput(char letter);
+
+        void reset();
+
+        std::string getWord();
 };
 
 #endif //HANGMAN_HPP

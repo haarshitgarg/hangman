@@ -3,6 +3,7 @@
 #include <chrono>
 #include <functional>
 #include <iostream>
+#include <thread>
 
 Hangman::Hangman() {
     this->eventHandlerThread_ = std::thread(&Hangman::eventHandlerLoop, this);
@@ -17,7 +18,7 @@ Hangman::Hangman() {
     this->startup_sprite_.setTexture(startup_image_);
    
     // TODO edit this to take random words from a file
-    this->correct_word_ = "APPLE";
+    this->correct_word_ = getWord();
     for(int i = 0; i<correct_word_.size(); i++) {
         this->display_map_.push_back(0);
     }
@@ -36,7 +37,12 @@ Hangman::Hangman() {
     game_ui_text_box_.setFillColor(sf::Color::Red);
     game_ui_text_box_.setStyle(sf::Text::Style::Underlined);
 
-    game_ui_text_box_.setPosition(50, 350);
+    game_ui_text_box_.setPosition(50, 400);
+
+    game_finish_text_.setFont(font_);
+    game_finish_text_.setPosition(450, 100);
+    game_finish_text_.setCharacterSize(50);
+    game_finish_text_.setFillColor(sf::Color::Red);
 }
 
 Hangman::~Hangman() {
@@ -46,6 +52,9 @@ Hangman::~Hangman() {
 
 
 void Hangman::eventHandlerLoop() {
+    int count = 1;
+    this->handleHangmanImages(count);
+    count++;
     while(!exit_requested_) {
         if(!this->charQueue_.empty()) {
             char text = this->charQueue_[0];
@@ -55,12 +64,33 @@ void Hangman::eventHandlerLoop() {
             sf::Sprite sprite;
             if(checkInput(text)) {
                 this->handleUI(this->game_ui_text_box_);
+                if(this->game_finishe_)
+                {
+                    count = 2;
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    this->reset();
+
+                    game_finishe_ = false;
+                }
+
             }
             else {
+                this->handleHangmanImages(count);
+                if(count == 7) {
+                    game_finish_text_.setString("It is "+ correct_word_);
+                    game_finishe_ = true;
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+                    game_finishe_ = false;
+                    this->reset();
+                    count = 1;
+                }
+                count++;
                 std::cout<<"Letter is wrong"<<std::endl;
             }
             std::cout<<"Erased "<<text<<" from the queue"<<std::endl;
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+        }
+        else{
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 }
@@ -79,8 +109,14 @@ void Hangman::run() {
             window_.draw(this->startup_text_);
         }
         else {
+            window_.draw(this->game_ui_sprite_);
             window_.draw(this->game_ui_text_box_);
         }
+
+        if(this->game_finishe_){
+            window_.draw(this->game_finish_text_);
+        }
+
         window_.display();
         while (window_.pollEvent(event_))
         {
@@ -127,9 +163,9 @@ void Hangman::setupSpriteBackground() {
         count++;
     }
     this->startup_text_.setFont(font_);
-    this->startup_text_.setString("HANGMAN");
+    this->startup_text_.setString("Hangman (for Purvaja)");
     this->startup_text_.setFillColor(sf::Color::Red);
-    this->startup_text_.setCharacterSize(100);
+    this->startup_text_.setCharacterSize(60);
     this->startup_text_.setPosition(50, 300);
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -157,9 +193,7 @@ void Hangman::AddTaskToQueue(const std::function<void()>& func) {
 }
 
 void Hangman::handleUI(sf::Text& ui_text) {
-    // UI texture position and texture itself set
-
-    // text ki position and string;
+    std::string current_word;
     std::string my_text_box;
     for(int i = 0; i<this->correct_word_.size(); i++) {
         if(this->display_map_[i] == 0){
@@ -167,7 +201,12 @@ void Hangman::handleUI(sf::Text& ui_text) {
         }
         else {
             my_text_box += "| " + correct_word_.substr(i,1) + " ";
+            current_word += correct_word_.substr(i, 1);
         }
+    }
+    if(current_word == correct_word_) {
+        this->game_finishe_ = true;
+        this->game_finish_text_.setString("You WON");
     }
     my_text_box += "|";
     ui_text.setString(my_text_box);
@@ -175,7 +214,7 @@ void Hangman::handleUI(sf::Text& ui_text) {
     ui_text.setFillColor(sf::Color::Red);
     ui_text.setStyle(sf::Text::Style::Underlined);
 
-    ui_text.setPosition(50, 350);
+    ui_text.setPosition(50, 400);
 }
 
 
@@ -190,8 +229,32 @@ bool Hangman::checkInput(char letter) {
     return status;
 }
 
+void Hangman::handleHangmanImages(int count) {
+    std::string file_path = "/Users/harshitgarg/CPP-projects/hangman/assets/hangmanpart";
+    file_path += std::to_string(count) + ".png";
+    if(!this->game_ui_hangman_.loadFromFile(file_path)) {
+        std::cout<<"Failed to load the file: "<<file_path<<std::endl;
+    }
+    this->game_ui_sprite_.setTexture(this->game_ui_hangman_);
+}
 
+void Hangman::reset() {
+    // TODO load a random word from the a list
+    correct_word_ = getWord();
+    display_map_.clear();
+    for(int i = 0; i<correct_word_.size(); i++) {
+        display_map_.push_back(0);
+    }
+    game_finish_text_.setString("");
+    handleUI(game_ui_text_box_);
+    handleHangmanImages(1); 
+}
 
+std::string Hangman::getWord() {
+    std::vector<std::string> word = {"APPLE", "BANANA", "BOMB", "BEACH", "BRAIN", "FLUTE", "RED", "GREEN"};
+    int i = rand()%8;
+    return word[i];
+}
 
 
 
